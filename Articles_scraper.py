@@ -16,11 +16,11 @@ def write_csv_file():
         print(f'Downloading data from the chosen webpage: {webpage}')
         pages = (core_html.find('label', {'class': 'of-total-pages'})).text.strip('of ')
         pages = int(pages)
-        zoznam = []
-        zoznam.append(webpage)
+        content = []
+        content.append(webpage)
 
-        clanky = []
-        odkazy = []
+        articles = []
+        references = []
         journals = []
         years = []
         doi = []
@@ -28,12 +28,12 @@ def write_csv_file():
         for i in range(2, pages+1):
             if pages >= 2:
                 page = webpage + f"&page={i}"
-                zoznam.append(page)
+                content.append(page)
             else:
                 continue
 
-        for i in range(len(zoznam)):
-            html = BeautifulSoup(get(zoznam[i]).text, features="html.parser")
+        for i in range(len(content)):
+            html = BeautifulSoup(get(content[i]).text, features="html.parser")
             informacie = html.find_all('div', {'class':  'docsum-content'})
             linky = html.find_all('a', {'class': 'docsum-title'})
 
@@ -55,27 +55,27 @@ def write_csv_file():
                 journals.append(journal)
 
             for clen in linky:
-                link = "/".join(zoznam[i].split("/")[:-1]) + "/" + clen['href']
-                odkazy.append(link)
+                link = "/".join(content[i].split("/")[:-1]) + "/" + clen['href']
+                references.append(link)
 
                 nadpis = clen.text
-                clanky.append(nadpis)
+                articles.append(nadpis)
 
-        for i in range(len(clanky)):
-            slovnik = {}
-            clanky[i] = clanky[i].strip('\n              \n')
-            clanky[i] = clanky[i].strip('\n')
-            clanky[i] = clanky[i].strip('              ')
-            slovnik['DOI_WEBPAGE'] = doi[i]
-            slovnik['PUBMED_WEBPAGE'] = odkazy[i]
-            slovnik['YEAR'] = years[i]
-            slovnik['JOURNAL'] = journals[i]
-            slovnik['TITLE'] = clanky[i]
+        for i in range(len(articles)):
+            dictionary = {}
+            articles[i] = articles[i].strip('\n              \n')
+            articles[i] = articles[i].strip('\n')
+            articles[i] = articles[i].strip('              ')
+            dictionary['DOI_WEBPAGE'] = doi[i]
+            dictionary['PUBMED_WEBPAGE'] = references[i]
+            dictionary['YEAR'] = years[i]
+            dictionary['JOURNAL'] = journals[i]
+            dictionary['TITLE'] = articles[i]
 
             mode = "w" if f'{file_name}' not in os.listdir() else "a"
             with open(f'{file_name}', mode, newline='') as file:
-                header = list(slovnik.keys())
-                row = list(slovnik.values())
+                header = list(dictionary.keys())
+                row = list(dictionary.values())
                 writer = csv.DictWriter(file, fieldnames=header)
                 w = csv.writer(file)
                 if mode == "w":
