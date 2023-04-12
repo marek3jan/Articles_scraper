@@ -92,7 +92,7 @@ if __name__ == "__main__":
     elif len(arguments) > 2:
         print("More arguments than needed.".upper())
     else:
-        url = input("Insert your webpage: ".upper())
+        url = input("Webpage of interest: ".upper())
         arguments.insert(1, url)
         webpage = str(arguments[1])
         file_name = str(arguments[2]) + '.csv'
