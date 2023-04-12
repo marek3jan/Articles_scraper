@@ -28,7 +28,7 @@ The informations about found articles will be downloaded as a csv file in your c
   * The last argument is supposed to be the name of your csv file 
   * Do not write .csv as the suffix to your last argument, the program will do that automatically
 * The program will command you to insert the web-page > insert your selected web-page
-* Your csv file shoud be generated automatically
+* Your csv file should be generated automatically
 
 
 
