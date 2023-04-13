@@ -34,32 +34,46 @@ def write_csv_file():
 
         for i in range(len(content)):
             html = BeautifulSoup(get(content[i]).text, features="html.parser")
-            informacie = html.find_all('div', {'class':  'docsum-content'})
-            linky = html.find_all('a', {'class': 'docsum-title'})
+            information = html.find_all('div', {'class':  'docsum-content'})
+            links = html.find_all('a', {'class': 'docsum-title'})
 
-            for info in informacie:
-                idoi = info.find('span', {'class': 'docsum-journal-citation full-journal-citation'}).text.split('doi: ')
-                idoi = idoi[-1].split('. ')
+            for info in information:
+                if not info.find('span', {'class': 'docsum-journal-citation full-journal-citation'}):
+                    idoi = 'none'
 
-                if idoi[0][-1] == '.':
-                    idoi = idoi[0][0:-1]
+                elif not info.find('span', {'class': 'docsum-journal-citation full-journal-citation'}).text.split('doi: '):
+                    idoi = 'none'
+
                 else:
-                    idoi = idoi[0]
-                idoi = f'https://doi.org/{idoi}'
+                    idoi = info.find('span', {'class': 'docsum-journal-citation full-journal-citation'}).text.split('doi: ')
+                    idoi = idoi[-1].split('. ')
+
+                    if idoi[0][-1] == '.':
+                        idoi = idoi[0][0:-1]
+                    else:
+                        idoi = idoi[0]
+                    idoi = f'https://doi.org/{idoi}'
 
                 doi.append(idoi)
-                cit = info.find('span', {'class': 'docsum-journal-citation short-journal-citation'}).text
-                year = cit.split('. ')[1].strip('.')
+
+                if info.find('span', {'class': 'docsum-journal-citation short-journal-citation'}):
+                    cit = info.find('span', {'class': 'docsum-journal-citation short-journal-citation'}).text
+                    year = cit.split('. ')[1].strip('.')
+                    journal = cit.split('. ')[0]
+
+                else:
+                    year = 'none'
+                    journal = 'none'
+
                 years.append(year)
-                journal = cit.split('. ')[0]
                 journals.append(journal)
 
-            for clen in linky:
-                link = "/".join(content[i].split("/")[:-1]) + "/" + clen['href']
+            for direction in links:
+                link = "/".join(content[i].split("/")[:-1]) + "/" + direction['href']
                 references.append(link)
 
-                nadpis = clen.text
-                articles.append(nadpis)
+                title = direction.text.encode('ascii', 'ignore').decode()
+                articles.append(title)
 
         for i in range(len(articles)):
             dictionary = {}
