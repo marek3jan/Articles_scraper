@@ -6,7 +6,7 @@ import sys
 
 arguments = list(sys.argv)
 
-def write_csv_file():
+def give_me_articles():
     core_html = BeautifulSoup(get(webpage).text, features="html.parser")
 
     if not core_html.find('div', {'class':  'docsum-content'}):
@@ -110,4 +110,4 @@ if __name__ == "__main__":
         arguments.insert(1, url)
         webpage = str(arguments[1])
         file_name = str(arguments[2]) + '.csv'
-        write_csv_file()
+        give_me_articles()
