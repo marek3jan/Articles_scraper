@@ -5,7 +5,7 @@ The aim of this project is to harness information about scientific articles from
 
 The informations about found articles will be downloaded as a csv file in your computer.
 
-# Proper guide to election_scraper.py 
+# Proper guide to Articles_Scraper.py 
 
 ## Accessing the website of interest:
 * Access the website https://pubmed.ncbi.nlm.nih.gov/
