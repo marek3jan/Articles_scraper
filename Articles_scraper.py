@@ -6,26 +6,27 @@ import sys
 
 arguments = list(sys.argv)
 
+
 def define_source():
     core_source = BeautifulSoup(get(web_page).text, features="html.parser")
 
     if core_source.find('div', {'class': 'docsum-content'}):
-        source = BeautifulSoup(get(web_page).text, features="html.parser")
+        print(f"Your csv_file is now being generated from the source {arguments[2]}")
+        return BeautifulSoup(get(web_page).text, features="html.parser")
 
     else:
-        source = 'none'
+        print('Your selected website is not compatible with this web-scraper.')
+        return 'none'
 
-    return source
 
 def select_pages():
     source = define_source()
     if source != 'none':
-        pages = int((source.find('label', {'class': 'of-total-pages'})).text.strip('of '))
+        return int((source.find('label', {'class': 'of-total-pages'})).text.strip('of '))
 
     else:
-        pages = 'none'
+        return 'none'
 
-    return pages
 
 def create_content_archive():
     content_archive: list = []
@@ -39,96 +40,106 @@ def create_content_archive():
             else:
                 page = web_page + f"&page={i}"
                 content_archive.append(page)
+        return content_archive
 
     else:
-        content_archive = 'none'
+        return 'none'
 
-    return content_archive
 
-def create_list_of_information():
+def return_title(a):
+    title = a.text.encode('ascii', 'ignore').decode()
+    title = title.strip('\n              \n')
+    title = title.strip('\n')
+    title = title.strip('              ')
+
+    return title
+
+
+def return_doi(b):
+    if not b.find('span', {'class': 'docsum-journal-citation full-journal-citation'}):
+        idoi = 'none'
+
+    elif not b.find('span', {'class': 'docsum-journal-citation full-journal-citation'}).text.split(
+            'doi: '):
+        idoi = 'none'
+
+    else:
+        idoi = b.find('span', {'class': 'docsum-journal-citation full-journal-citation'}).text.split(
+            'doi: ')
+        idoi = idoi[-1].split('. ')
+
+        if idoi[0][-1] == '.':
+            idoi = idoi[0][0:-1]
+        else:
+            idoi = idoi[0]
+
+    return idoi
+
+
+def return_url(c):
+    base_url = 'https://doi.org'
+    link = base_url + c
+    return link
+
+
+def return_year_journal(d):
+    if d.find('span', {'class': 'docsum-journal-citation short-journal-citation'}):
+        cit = d.find('span', {'class': 'docsum-journal-citation short-journal-citation'}).text
+        year = cit.split('. ')[1].strip('.')
+        journal = cit.split('. ')[0]
+
+    else:
+        year = 'none'
+        journal = 'none'
+
+    return year, journal
+
+
+def return_information():
     content = create_content_archive()
+    webdoi = []
+    doi = []
+    years = []
+    journals = []
+    articles = []
 
     if content != 'none':
-        list_of_information: list = []
-
-        webdoi = []
-        doi = []
-        years = []
-        journals = []
-        articles = []
 
         for i in range(len(content)):
             html = BeautifulSoup(get(content[i]).text, features="html.parser")
             information = html.find_all('div', {'class': 'docsum-content'})
             links = html.find_all('a', {'class': 'docsum-title'})
 
-            for direction in links:
-                title = direction.text.encode('ascii', 'ignore').decode()
-                title = title.strip('\n              \n')
-                title = title.strip('\n')
-                title = title.strip('              ')
-                articles.append(title)
-
             for info in information:
-                if not info.find('span', {'class': 'docsum-journal-citation full-journal-citation'}):
-                    idoi = 'none'
-
-                elif not info.find('span', {'class': 'docsum-journal-citation full-journal-citation'}).text.split('doi: '):
-                    idoi = 'none'
-
-                else:
-                    idoi = info.find('span', {'class': 'docsum-journal-citation full-journal-citation'}).text.split('doi: ')
-                    idoi = idoi[-1].split('. ')
-
-                    if idoi[0][-1] == '.':
-                        idoi = idoi[0][0:-1]
-                    else:
-                        idoi = idoi[0]
-
-                    linkdoi = f'https://doi.org/{idoi}'
-
+                idoi = return_doi(info)
                 doi.append(idoi)
-                webdoi.append(linkdoi)
-
-                if info.find('span', {'class': 'docsum-journal-citation short-journal-citation'}):
-                    cit = info.find('span', {'class': 'docsum-journal-citation short-journal-citation'}).text
-                    year = cit.split('. ')[1].strip('.')
-                    journal = cit.split('. ')[0]
-
-                else:
-                    year = 'none'
-                    journal = 'none'
-
+                webdoi.append(return_url(idoi))
+                year, journal = return_year_journal(info)
                 years.append(year)
                 journals.append(journal)
 
-        list_of_information.append(webdoi)
-        list_of_information.append(doi)
-        list_of_information.append(years)
-        list_of_information.append(journals)
-        list_of_information.append(articles)
+            for direction in links:
+                title = return_title(direction)
+                articles.append(title)
 
-    else:
-        list_of_information = 'none'
-
-    return list_of_information
+    return doi, webdoi, years, journals, articles
 
 
 def create_dictionary_and_write_to_csv():
-    my_list = create_list_of_information()
+    doi, webdoi, years, journals, articles = return_information()
 
-    if my_list == 'none':
-        Termination = True
-        return Termination
+    if len(articles) == 0:
+        termination = True
+        return termination
 
     else:
-        for i in range(len(my_list[4])):
-            dictionary: dict = {}
-            dictionary['Web Source'] = my_list[0][i]
-            dictionary['DOI'] = my_list[1][i]
-            dictionary['Year'] = my_list[2][i]
-            dictionary['Scientific Journal'] = my_list[3][i]
-            dictionary['Article Title'] = my_list[4][i]
+        for i in range(len(articles)):
+            dictionary = dict()
+            dictionary['Web Source'] = webdoi[i]
+            dictionary['DOI'] = doi[i]
+            dictionary['Year'] = years[i]
+            dictionary['Scientific Journal'] = journals[i]
+            dictionary['Article Title'] = articles[i]
 
             mode = "w" if f'{file_name}' not in os.listdir() else "a"
             with open(f'{file_name}', mode, newline='') as file:
@@ -139,19 +150,15 @@ def create_dictionary_and_write_to_csv():
                 if mode == "w":
                     writer.writeheader()
                 w.writerow(row)
+        print('Your csv file has been generated'.upper())
 
 
 if __name__ == "__main__":
-    if len(arguments) < 2:
-        print("You forgot to write the first argument to define the name of your csv file.".upper())
-    elif len(arguments) > 2:
+    if len(list(sys.argv)) < 3:
+        print("Not enough arguments.".upper())
+    elif len(list(sys.argv)) > 3:
         print("More arguments than needed.".upper())
     else:
-        url = input("Webpage of interest: ".upper())
-        arguments.insert(1, url)
-        web_page = str(arguments[1])
-        file_name = str(arguments[2]) + '.csv'
-
+        file_name = arguments[1] + '.csv'
+        web_page = arguments[2]
         create_dictionary_and_write_to_csv()
-
-        print("Your csv file should be ready, otherwise you selected wrong website".upper())
