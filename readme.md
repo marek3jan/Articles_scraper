@@ -24,8 +24,8 @@ The informations about found articles will be downloaded as a csv file in your c
   * make sure your virtual environment is active and that Python and pip is succesfully installed
     * you can also proceed this by installing PyCharm, downloading this project on Pycharm and using the Terminal
     
-* Type the arguments into the directory: >python   Articles_scraper.py   name_of_your_file url_of_website
-* The program will inform you that the fle is being downloaded from the source of your selected url
+* Type the arguments into the directory: >python   Articles_scraper.py    name_of_your_file    URL
+* The program will inform you that the file is being downloaded from the source of your selected url
 * Do not put .csv suffix to the name of your file, the program will do that automatically
 * Your csv file should be generated automatically
 
