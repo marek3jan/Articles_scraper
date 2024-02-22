@@ -67,11 +67,12 @@ def return_doi(b):
         idoi = b.find('span', {'class': 'docsum-journal-citation full-journal-citation'}).text.split(
             'doi: ')
         idoi = idoi[-1].split('. ')
-
-        if idoi[0][-1] == '.':
-            idoi = idoi[0][0:-1]
+        if len(idoi) == 0:
+            idoi = 'none'
+        elif idoi[-1] == '.':
+            idoi = idoi[0:-1]
         else:
-            idoi = idoi[0]
+            idoi = idoi
 
     return idoi
 
