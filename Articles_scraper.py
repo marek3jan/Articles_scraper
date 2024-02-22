@@ -62,23 +62,27 @@ def return_doi(b):
     elif not b.find('span', {'class': 'docsum-journal-citation full-journal-citation'}).text.split(
             'doi: '):
         idoi = 'none'
-
     else:
         idoi = b.find('span', {'class': 'docsum-journal-citation full-journal-citation'}).text.split(
             'doi: ')
         idoi = idoi[-1].split('. ')
-        if len(idoi) == 0:
-            idoi = 'none'
-        elif idoi[-1] == '.':
-            idoi = idoi[0:-1]
+
+        if not isinstance(idoi, str):
+            idoi = str(idoi[0]).strip("['")
+            idoi = idoi.strip("']")
         else:
-            idoi = idoi
+            if len(idoi) == 0:
+                idoi = 'x'
+            elif idoi[-1] == '.':
+                idoi = idoi[0:-1]
+            else:
+                idoi = idoi
 
     return idoi
 
 
 def return_url(c):
-    base_url = 'https://doi.org'
+    base_url = 'https://doi.org/'
     link = base_url + c
     return link
 
@@ -86,8 +90,12 @@ def return_url(c):
 def return_year_journal(d):
     if d.find('span', {'class': 'docsum-journal-citation short-journal-citation'}):
         cit = d.find('span', {'class': 'docsum-journal-citation short-journal-citation'}).text
-        year = cit.split('. ')[1].strip('.')
-        journal = cit.split('. ')[0]
+        if len(cit.split('. ')) >= 2:
+            year = cit.split('. ')[1].strip('.')
+            journal = cit.split('. ')[0]
+        else:
+            year = 'error'
+            journal = cit
 
     else:
         year = 'none'
